@@ -36,7 +36,7 @@ func easyjson6601e8cdDecodeTmpEasyjson(in *jlexer.Lexer, out *Settings) {
 			continue
 		}
 		switch key {
-		case "denied_names":
+		case "denied_toplevel_domains":
 			if in.IsNull() {
 				in.Skip()
 				out.DeniedTLDs = nil
@@ -74,7 +74,7 @@ func easyjson6601e8cdEncodeTmpEasyjson(out *jwriter.Writer, in Settings) {
 	first := true
 	_ = first
 	{
-		const prefix string = ",\"denied_names\":"
+		const prefix string = ",\"denied_toplevel_domains\":"
 		out.RawString(prefix[1:])
 		if in.DeniedTLDs == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
 			out.RawString("null")
