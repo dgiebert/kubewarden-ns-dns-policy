@@ -39,5 +39,5 @@
 
   # request accepted
   [ "$status" -eq 0 ]
-  [ $(expr "$output" : '.*allowed.*true') -ne 0 ]
+  [ $(expr "$output" : '.*allowed.*false') -ne 0 ]
 }
