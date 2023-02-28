@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/mailru/easyjson"
 	"testing"
+
+	"github.com/mailru/easyjson"
 )
 
 func TestParsingSettingsWithNoValueProvided(t *testing.T) {
@@ -12,8 +13,8 @@ func TestParsingSettingsWithNoValueProvided(t *testing.T) {
 		t.Errorf("Unexpected error %+v", err)
 	}
 
-	if len(settings.DeniedNames) != 0 {
-		t.Errorf("Expecpted DeniedNames to be empty")
+	if len(settings.DeniedTLDs) != 0 {
+		t.Errorf("Expecpted DeniedTLDs to be empty")
 	}
 
 	valid, err := settings.Valid()
@@ -27,7 +28,7 @@ func TestParsingSettingsWithNoValueProvided(t *testing.T) {
 
 func TestIsNameDenied(t *testing.T) {
 	settings := Settings{
-		DeniedNames: []string{"bob"},
+		DeniedTLDs: []string{"bob"},
 	}
 
 	if !settings.IsNameDenied("bob") {

@@ -10,47 +10,17 @@ import (
 	"github.com/mailru/easyjson"
 )
 
-func TestEmptySettingsLeadsToApproval(t *testing.T) {
-	settings := Settings{}
-	pod := corev1.Pod{
-		Metadata: &metav1.ObjectMeta{
-			Name:      "test-pod",
-			Namespace: "default",
-		},
-	}
-
-	payload, err := kubewarden_testing.BuildValidationRequest(&pod, &settings)
-	if err != nil {
-		t.Errorf("Unexpected error: %+v", err)
-	}
-
-	responsePayload, err := validate(payload)
-	if err != nil {
-		t.Errorf("Unexpected error: %+v", err)
-	}
-
-	var response kubewarden_protocol.ValidationResponse
-	if err := easyjson.Unmarshal(responsePayload, &response); err != nil {
-		t.Errorf("Unexpected error: %+v", err)
-	}
-
-	if response.Accepted != true {
-		t.Errorf("Unexpected rejection: msg %s - code %d", *response.Message, *response.Code)
-	}
-}
-
 func TestApproval(t *testing.T) {
 	settings := Settings{
-		DeniedNames: []string{"foo", "bar"},
+		DeniedTLDs: []string{"com"},
 	}
-	pod := corev1.Pod{
+	namespace := corev1.Namespace{
 		Metadata: &metav1.ObjectMeta{
-			Name:      "test-pod",
-			Namespace: "default",
+			Name: "test",
 		},
 	}
 
-	payload, err := kubewarden_testing.BuildValidationRequest(&pod, &settings)
+	payload, err := kubewarden_testing.BuildValidationRequest(&namespace, &settings)
 	if err != nil {
 		t.Errorf("Unexpected error: %+v", err)
 	}
@@ -70,14 +40,17 @@ func TestApproval(t *testing.T) {
 	}
 }
 
-func TestApproveFixture(t *testing.T) {
+func TestApprovalHTTP(t *testing.T) {
 	settings := Settings{
-		DeniedNames: []string{},
+		DeniedTLDs: []string{},
+	}
+	namespace := corev1.Namespace{
+		Metadata: &metav1.ObjectMeta{
+			Name: "test",
+		},
 	}
 
-	payload, err := kubewarden_testing.BuildValidationRequestFromFixture(
-		"test_data/pod.json",
-		&settings)
+	payload, err := kubewarden_testing.BuildValidationRequest(&namespace, &settings)
 	if err != nil {
 		t.Errorf("Unexpected error: %+v", err)
 	}
@@ -99,17 +72,16 @@ func TestApproveFixture(t *testing.T) {
 
 func TestRejectionBecauseNameIsDenied(t *testing.T) {
 	settings := Settings{
-		DeniedNames: []string{"foo", "test-pod"},
+		DeniedTLDs: []string{"com"},
 	}
 
-	pod := corev1.Pod{
+	ns := corev1.Namespace{
 		Metadata: &metav1.ObjectMeta{
-			Name:      "test-pod",
-			Namespace: "default",
+			Name: "com",
 		},
 	}
 
-	payload, err := kubewarden_testing.BuildValidationRequest(&pod, &settings)
+	payload, err := kubewarden_testing.BuildValidationRequest(&ns, &settings)
 	if err != nil {
 		t.Errorf("Unexpected error: %+v", err)
 	}
@@ -128,7 +100,46 @@ func TestRejectionBecauseNameIsDenied(t *testing.T) {
 		t.Error("Unexpected approval")
 	}
 
-	expected_message := "The 'test-pod' name is on the deny list"
+	expected_message := "The 'com' namespace is on the deny list"
+	if response.Message == nil {
+		t.Errorf("expected response to have a message")
+	}
+	if *response.Message != expected_message {
+		t.Errorf("Got '%s' instead of '%s'", *response.Message, expected_message)
+	}
+}
+
+func TestRejectionBecauseNameIsDeniedHTTP(t *testing.T) {
+	settings := Settings{
+		DeniedTLDs: []string{},
+	}
+
+	ns := corev1.Namespace{
+		Metadata: &metav1.ObjectMeta{
+			Name: "com",
+		},
+	}
+
+	payload, err := kubewarden_testing.BuildValidationRequest(&ns, &settings)
+	if err != nil {
+		t.Errorf("Unexpected error: %+v", err)
+	}
+
+	responsePayload, err := validate(payload)
+	if err != nil {
+		t.Errorf("Unexpected error: %+v", err)
+	}
+
+	var response kubewarden_protocol.ValidationResponse
+	if err := easyjson.Unmarshal(responsePayload, &response); err != nil {
+		t.Errorf("Unexpected error: %+v", err)
+	}
+
+	if response.Accepted != false {
+		t.Error("Unexpected approval")
+	}
+
+	expected_message := "The 'com' namespace is on the deny list"
 	if response.Message == nil {
 		t.Errorf("expected response to have a message")
 	}

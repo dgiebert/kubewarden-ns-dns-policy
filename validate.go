@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strings"
 
 	onelog "github.com/francoispqt/onelog"
 	corev1 "github.com/kubewarden/k8s-objects/api/core/v1"
@@ -20,7 +19,6 @@ func validate(payload []byte) ([]byte, error) {
 			kubewarden.Message(err.Error()),
 			kubewarden.Code(400))
 	}
-
 	// Create a Settings instance from the ValidationRequest object
 	settings, err := NewSettingsFromValidationReq(&validationRequest)
 	if err != nil {
@@ -30,32 +28,30 @@ func validate(payload []byte) ([]byte, error) {
 	}
 
 	// Access the **raw** JSON that describes the object
-	podJSON := validationRequest.Request.Object
+	rawJSON := validationRequest.Request.Object
 
-	// Try to create a Pod instance using the RAW JSON we got from the
+	// Try to create a Namespace instance using the RAW JSON we got from the
 	// ValidationRequest.
-	pod := &corev1.Pod{}
-	if err := easyjson.Unmarshal([]byte(podJSON), pod); err != nil {
+	ns := &corev1.Namespace{}
+	if err := easyjson.Unmarshal([]byte(rawJSON), ns); err != nil {
 		return kubewarden.RejectRequest(
 			kubewarden.Message(
-				fmt.Sprintf("Cannot decode Pod object: %s", err.Error())),
+				fmt.Sprintf("Cannot decode Namespace object: %s", err.Error())),
 			kubewarden.Code(400))
 	}
 
-	logger.DebugWithFields("validating pod object", func(e onelog.Entry) {
-		e.String("name", pod.Metadata.Name)
-		e.String("namespace", pod.Metadata.Namespace)
+	logger.DebugWithFields("validating namespace object", func(e onelog.Entry) {
+		e.String("name", ns.Metadata.Name)
 	})
 
-	if settings.IsNameDenied(pod.Metadata.Name) {
-		logger.InfoWithFields("rejecting pod object", func(e onelog.Entry) {
-			e.String("name", pod.Metadata.Name)
-			e.String("denied_names", strings.Join(settings.DeniedNames, ","))
+	if settings.IsNameDenied(ns.Metadata.Name) {
+		logger.InfoWithFields("rejecting namespace object", func(e onelog.Entry) {
+			e.String("name", ns.Metadata.Name)
 		})
 
 		return kubewarden.RejectRequest(
 			kubewarden.Message(
-				fmt.Sprintf("The '%s' name is on the deny list", pod.Metadata.Name)),
+				fmt.Sprintf("The '%s' namespace is on the deny list", ns.Metadata.Name)),
 			kubewarden.NoCode)
 	}
 

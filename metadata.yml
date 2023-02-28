@@ -1,19 +1,17 @@
 rules:
 - apiGroups: [""]
   apiVersions: ["v1"]
-  resources: ["pods"]
+  resources: ["namespaces"]
   operations: ["CREATE"]
 mutating: false
 contextAware: false
 executionMode: kubewarden-wapc
 annotations:
   io.kubewarden.policy.title: policy-name
-  io.kubewarden.policy.description: Short description
-  io.kubewarden.policy.author: policy-author
-  io.kubewarden.policy.url: https://github.com/yourorg/policy-name
-  io.kubewarden.policy.source: https://github.com/yourorg/policy-name
+  io.kubewarden.policy.description: Denies TLDs based on settings or IANA list
+  io.kubewarden.policy.author: Dominic Giebert
+  io.kubewarden.policy.url: https://github.com/dgiebert/kubewarden-ns-dns-policy
+  io.kubewarden.policy.source: https://github.com/dgiebert/kubewarden-ns-dns-policy
   io.kubewarden.policy.license: Apache-2.0
   io.kubewarden.policy.usage: |
-    Long explaination.
-
-    **Note well:** this can be Markdown text
+    Checks when a namespace is created that is not a TLD provided either via List or IANA List

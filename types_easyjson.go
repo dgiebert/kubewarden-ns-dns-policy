@@ -39,22 +39,22 @@ func easyjson6601e8cdDecodeTmpEasyjson(in *jlexer.Lexer, out *Settings) {
 		case "denied_names":
 			if in.IsNull() {
 				in.Skip()
-				out.DeniedNames = nil
+				out.DeniedTLDs = nil
 			} else {
 				in.Delim('[')
-				if out.DeniedNames == nil {
+				if out.DeniedTLDs == nil {
 					if !in.IsDelim(']') {
-						out.DeniedNames = make([]string, 0, 4)
+						out.DeniedTLDs = make([]string, 0, 4)
 					} else {
-						out.DeniedNames = []string{}
+						out.DeniedTLDs = []string{}
 					}
 				} else {
-					out.DeniedNames = (out.DeniedNames)[:0]
+					out.DeniedTLDs = (out.DeniedTLDs)[:0]
 				}
 				for !in.IsDelim(']') {
 					var v1 string
 					v1 = string(in.String())
-					out.DeniedNames = append(out.DeniedNames, v1)
+					out.DeniedTLDs = append(out.DeniedTLDs, v1)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -76,11 +76,11 @@ func easyjson6601e8cdEncodeTmpEasyjson(out *jwriter.Writer, in Settings) {
 	{
 		const prefix string = ",\"denied_names\":"
 		out.RawString(prefix[1:])
-		if in.DeniedNames == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+		if in.DeniedTLDs == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v2, v3 := range in.DeniedNames {
+			for v2, v3 := range in.DeniedTLDs {
 				if v2 > 0 {
 					out.RawByte(',')
 				}

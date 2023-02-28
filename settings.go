@@ -1,6 +1,10 @@
 package main
 
 import (
+	"io/ioutil"
+	"net/http"
+	"strings"
+
 	kubewarden "github.com/kubewarden/policy-sdk-go"
 	kubewarden_protocol "github.com/kubewarden/policy-sdk-go/protocol"
 	"github.com/mailru/easyjson"
@@ -16,8 +20,8 @@ func (s *Settings) Valid() (bool, error) {
 }
 
 func (s *Settings) IsNameDenied(name string) bool {
-	for _, deniedName := range s.DeniedNames {
-		if deniedName == name {
+	for _, deniedName := range s.DeniedTLDs {
+		if strings.EqualFold(deniedName, name) {
 			return true
 		}
 	}
@@ -28,6 +32,11 @@ func (s *Settings) IsNameDenied(name string) bool {
 func NewSettingsFromValidationReq(validationReq *kubewarden_protocol.ValidationRequest) (Settings, error) {
 	settings := Settings{}
 	err := easyjson.Unmarshal(validationReq.Settings, &settings)
+	if len(settings.DeniedTLDs) == 0 {
+		resp, _ := http.Get("https://data.iana.org/TLD/tlds-alpha-by-domain.txt")
+		body, _ := ioutil.ReadAll(resp.Body)
+		settings.DeniedTLDs = strings.Split(string(body), "\n")[1:]
+	}
 	return settings, err
 }
 
