@@ -1,8 +1,7 @@
 package main
 
 import (
-	"io/ioutil"
-	"net/http"
+	"embed"
 	"strings"
 
 	kubewarden "github.com/kubewarden/policy-sdk-go"
@@ -33,9 +32,10 @@ func NewSettingsFromValidationReq(validationReq *kubewarden_protocol.ValidationR
 	settings := Settings{}
 	err := easyjson.Unmarshal(validationReq.Settings, &settings)
 	if len(settings.DeniedTLDs) == 0 {
-		resp, _ := http.Get("https://data.iana.org/TLD/tlds-alpha-by-domain.txt")
-		body, _ := ioutil.ReadAll(resp.Body)
-		settings.DeniedTLDs = strings.Split(string(body), "\n")[1:]
+		//go:embed tlds-alpha-by-domain.txt
+		var fs embed.FS
+		content, _ := fs.ReadFile("tlds-alpha-by-domain.txt")
+		settings.DeniedTLDs = strings.Split(string(content), "\n")[1:]
 	}
 	return settings, err
 }

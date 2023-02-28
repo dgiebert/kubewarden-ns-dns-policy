@@ -1,0 +1,15 @@
+{
+  "uid": "1299d386-525b-4032-98ae-1949f69f9cfc",
+  "kind": {
+    "group": "",
+    "kind": "Namespace",
+    "version": "v1"
+  },
+  "object": {
+    "apiVersion": "v1",
+    "kind": "Namespace",
+    "metadata": {
+      "name": "test-ns"
+    }
+  }
+}
