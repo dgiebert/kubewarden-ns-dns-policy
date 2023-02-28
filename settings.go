@@ -11,6 +11,9 @@ import (
 	"fmt"
 )
 
+//go:embed tlds-alpha-by-domain.txt
+var fs embed.FS
+
 // The Settings class is defined inside of the `types.go` file
 
 // No special checks have to be done
@@ -32,8 +35,6 @@ func NewSettingsFromValidationReq(validationReq *kubewarden_protocol.ValidationR
 	settings := Settings{}
 	err := easyjson.Unmarshal(validationReq.Settings, &settings)
 	if len(settings.DeniedTLDs) == 0 {
-		//go:embed tlds-alpha-by-domain.txt
-		var fs embed.FS
 		content, _ := fs.ReadFile("tlds-alpha-by-domain.txt")
 		settings.DeniedTLDs = strings.Split(string(content), "\n")[1:]
 	}
