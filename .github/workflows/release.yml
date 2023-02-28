@@ -25,4 +25,4 @@ jobs:
 
     uses: kubewarden/github-actions/.github/workflows/reusable-release-policy-go.yml@v1
     with:
-      oci-target: ghrc.io/${{ github.repository_owner }}/policies/ns-dns-policy
+      oci-target: ghcr.io/${{ github.repository_owner }}/policies/namespace-dns
